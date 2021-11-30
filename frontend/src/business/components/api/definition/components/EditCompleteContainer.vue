@@ -1,6 +1,6 @@
 <template>
   <el-card class="card-content" v-if="isShow && !loading">
-    <el-button-group v-if="currentApi.id">
+    <el-button-group v-if="currentApi.id" style="z-index: 10; position: fixed;">
       <el-tooltip class="item" effect="dark" :content="$t('api_test.definition.api_title')" placement="left">
         <el-button plain :class="{active: showApiList}" @click="changeTab('api')" size="small">API</el-button>
       </el-tooltip>
@@ -16,7 +16,7 @@
       </el-tooltip>
 
     </el-button-group>
-
+    <div style="height: 40px"></div>
     <template v-slot:header>
       <slot name="header"></slot>
     </template>

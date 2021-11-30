@@ -246,7 +246,7 @@
         api_definition.name,api_definition.protocol,api_definition.path,api_definition.module_id,api_definition.module_path,api_definition.method,
         api_definition.description,api_definition.request,api_definition.response,api_definition.environment_id,
         api_definition.status, api_definition.user_id, api_definition.create_time, api_definition.update_time, project.name as
-        project_name, user.name as user_name,deleteUser.name AS delete_user,api_definition.delete_time, api_definition.remark
+        project_name, user.name as user_name,deleteUser.name AS delete_user,api_definition.delete_time, api_definition.remark, api_definition.version, api_definition.ref_id
         from api_definition
         left join project on api_definition.project_id = project.id
         left join user on api_definition.user_id = user.id
@@ -672,6 +672,13 @@
                 and api_definition.id in
                 (SELECT api_definition_id FROM api_test_case)
             </if>
+            AND version = (SELECT project_version.id
+                            FROM api_definition tmp
+                            JOIN project_version
+                            ON tmp.project_id = project_version.project_id AND tmp.version = project_version.id
+                            WHERE ref_id = api_definition.ref_id
+                            ORDER BY project_version.create_time DESC
+                            LIMIT 1)
         </where>
     </sql>
 

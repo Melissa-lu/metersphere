@@ -419,7 +419,8 @@ public class ApiDefinitionService {
             ApiDefinitionExample.Criteria criteria = example.createCriteria();
             criteria.andMethodEqualTo(request.getMethod()).andStatusNotEqualTo("Trash")
                     .andProtocolEqualTo(request.getProtocol()).andPathEqualTo(request.getPath())
-                    .andProjectIdEqualTo(request.getProjectId()).andIdNotEqualTo(request.getId());
+                    .andProjectIdEqualTo(request.getProjectId()).andIdNotEqualTo(request.getId())
+                    .andVersionEqualTo(request.getVersion());
             Project project = projectMapper.selectByPrimaryKey(request.getProjectId());
             if (project != null && project.getRepeatable() != null && project.getRepeatable()) {
                 criteria.andNameEqualTo(request.getName());
@@ -514,7 +515,23 @@ public class ApiDefinitionService {
             test.setTags("");
         }
         this.setModule(test);
-        apiDefinitionMapper.updateByPrimaryKeySelective(test);
+
+        // 更新数据
+        ApiDefinitionExample example = new ApiDefinitionExample();
+        example.createCriteria().andIdEqualTo(test.getId()).andVersionEqualTo(request.getVersion());
+        if (apiDefinitionMapper.updateByExampleSelective(test, example) == 0) {
+            // 插入新版本的数据
+            ApiDefinitionWithBLOBs oldApi = apiDefinitionMapper.selectByPrimaryKey(test.getId());
+            test.setId(UUID.randomUUID().toString());
+            test.setNum(oldApi.getNum());
+            test.setVersion(request.getVersion());
+            test.setCreateTime(System.currentTimeMillis());
+            test.setUpdateTime(System.currentTimeMillis());
+            test.setCreateUser(SessionUtils.getUserId());
+            test.setOrder(oldApi.getOrder());
+            test.setRefId(oldApi.getRefId());
+            apiDefinitionMapper.insertSelective(test);
+        }
 
         // 同步修改用例路径
         if (StringUtils.equals(test.getProtocol(), "HTTP")) {
@@ -1777,5 +1794,12 @@ public class ApiDefinitionService {
             elements.add(new DocumentElement().newRoot("root", null));
         }
         return elements;
+    }
+
+    public List<ApiDefinition> getApiDefinitionVersions(String definitionId) {
+        ApiDefinitionWithBLOBs definition = apiDefinitionMapper.selectByPrimaryKey(definitionId);
+        ApiDefinitionExample example = new ApiDefinitionExample();
+        example.createCriteria().andRefIdEqualTo(definition.getRefId());
+        return apiDefinitionMapper.selectByExample(example);
     }
 }

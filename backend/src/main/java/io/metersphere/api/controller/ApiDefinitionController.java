@@ -16,6 +16,7 @@ import io.metersphere.api.service.ApiDefinitionService;
 import io.metersphere.api.service.ApiTestEnvironmentService;
 import io.metersphere.api.service.EsbApiParamService;
 import io.metersphere.api.service.EsbImportService;
+import io.metersphere.base.domain.ApiDefinition;
 import io.metersphere.base.domain.ApiDefinitionWithBLOBs;
 import io.metersphere.base.domain.ApiTestEnvironmentWithBLOBs;
 import io.metersphere.base.domain.Schedule;
@@ -345,6 +346,11 @@ public class ApiDefinitionController {
     @PostMapping("/update/follows/{definitionId}")
     public void saveFollows(@PathVariable String definitionId,@RequestBody List<String> follows) {
         apiDefinitionService.saveFollows(definitionId,follows);
+    }
+
+    @GetMapping("versions/{definitionId}")
+    public List<ApiDefinition> getApiDefinitionVersions(@PathVariable String definitionId) {
+       return apiDefinitionService.getApiDefinitionVersions(definitionId);
     }
 
 }
